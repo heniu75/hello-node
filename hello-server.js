@@ -3,15 +3,15 @@ var server = http.createServer(engine);
 
 const port = 8080;
 server.listen(port, function(){
-  console.log('Server was hit with a request.')
+  console.log(new Date().toISOString() + ' - Server was hit with a request.')
 })
 //console.log(server);
 
 function engine(request, response){
-  console.log('Writing a response...');
-    console.log('request: ' + request.url);
+  console.log(new Date().toISOString() +' - Writing a response...');
+    console.log(new Date().toISOString() + ' - request: ' + request.url);
   response.writeHead(200, { 'Content-Type': 'text/plain', 'MyCustomHeader':'MyCustomValue'});
-  response.write('hello world!');
+  response.write(new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' hello world!');
   response.end();
 }
 
