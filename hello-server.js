@@ -11,7 +11,7 @@ function engine(request, response){
   console.log(new Date().toISOString() +' - Writing a response...');
     console.log(new Date().toISOString() + ' - request: ' + request.url);
   response.writeHead(200, { 'Content-Type': 'text/plain', 'MyCustomHeader':'MyCustomValue'});
-  response.write(new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' hello world!!');
+  response.write(new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') + ' hello world - woo hoo!!');
   response.end();
 }
 
