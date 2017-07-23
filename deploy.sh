@@ -3,46 +3,88 @@
 #####################################################################
 # LOCAL
 #####################################################################
-# clean out old stuff
-rm hello-node.tar.gz
+pkg=hello-node
+pkgtar=$pkg.tar.gz
+pkgbak=$pkg.bak
+machine=178.62.89.153
 
-# archive the artefacts
-tar -czvf hello-node.tar.gz *.js *.json *.cmd
+if [ -f $pkgtar ]; then
+    echo removing $pkgtar
+    rm $pkgtar
+fi
+
+# package the contents of the current folder
+# https://stackoverflow.com/questions/984204/shell-command-to-tar-directory-excluding-certain-files-folders
+echo packaging current folder into $pkgtar
+tar --exclude='.DS_Store' --exclude='./node_modules' --exclude='./git' --exclude='.gitignore' -czvf $pkgtar *
 
 # secure copy using the current user onto the remote server
 # you must deploy using the local user which has authorised ssh keys
 # on the remote server
-scp hello-node.tar.gz 178.62.89.153:~/apps
+echo securely copying $pkgtar to $machine
+scp $pkgtar $machine:~/apps
 
 #####################################################################
 # REMOTE
 #####################################################################
-# stream all commands until the 'ENDSSH' marker
-ssh 178.62.89.153 << 'ENDSSH'
 
-# stop the pm2 app (PM2 must have been configured on the server)
-pm2 stop hello-node
+ssh $machine "
+
+echo '***** SSH START *****'
+
+# is this a node application?
+pkgjson=~/apps/$pkg/package.json
+if [ -e $pkgjson ]; then
+  # assume application is installed into PM2, so first stop it
+  echo stopping $pkg in PM2
+  pm2 stop $pkg
+fi
 
 # clear out the old
-rm -rf ~/apps/hello-node.bak
+if [ -d ~/apps/$pkgbak ]; then
+    echo removing folder ~/apps/$pkgbak
+    rm -rf ~/apps/$pkgbak
+fi
 
 # move current app to a backup
-mv ~/apps/hello-node ~/apps/hello-node.bak
+if [ -d ~/apps/$pkg ]; then
+    echo moving folder ~/apps/$pkg to ~/apps/$pkgbak
+    mv ~/apps/$pkg ~/apps/$pkgbak
+fi
 
 # create new folder
-mkdir ~/apps/hello-node
+mkdir ~/apps/$pkg
 
 # extract to the new folder
-tar xf ~/apps/hello-node.tar.gz -C ~/apps/hello-node
+echo extracting ~/apps/$pkgtar into folder ~/apps/$pkg
+tar xf ~/apps/$pkgtar -C ~/apps/$pkg
+
+# clean up the package archive
+echo removing ~/apps/$pkgtar
+rm ~/apps/$pkgtar
 
 # install system specific dependencies. Never ever copy modules
-npm install
+pkgjson=~/apps/$pkg/package.json
+# if this is a node application
+if [ -e $pkgjson ]; then
+  echo installing npm dependencies
+  cd ~/apps/$pkg
+  npm install
+  echo start the pm2 app $pkg
+  pm2 start $pkg
+  # DO NOT WATCH THE APP
+  #pm2 start $pkg --watch
+fi
 
-# start the pm2 app
-pm2 start hello-node
+echo '***** SSH END *****'
 
-# clean up the archive
-rm ~/apps/hello-node.tar.gz
+"
 
-# send signal that ssh session is to close
-ENDSSH
+#####################################################################
+# LOCAL AGAIN
+#####################################################################
+
+if [ -f $pkgtar ]; then
+  echo removing $pkgtar
+	rm $pkgtar
+fi
