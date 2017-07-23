@@ -4,6 +4,6 @@
 # LOCAL
 #####################################################################
 pkg=hello-node
-machine=178.62.89.153
+machine=gabby.viviware.co.uk
 
 source ../deploy-package/deploy-package.sh
