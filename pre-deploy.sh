@@ -1,9 +1,7 @@
 #!/bin/bash
 
 #####################################################################
-# LOCAL
+# pre-deploy
 #####################################################################
-pkg=hello-node
-machine=178.62.89.153
 
-source ../deploy-package/deploy-package.sh
+echo This is pre-deploy hello-node

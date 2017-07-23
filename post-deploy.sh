@@ -1,9 +1,7 @@
 #!/bin/bash
 
 #####################################################################
-# LOCAL
+# post-deploy
 #####################################################################
-pkg=hello-node
-machine=178.62.89.153
 
-source ../deploy-package/deploy-package.sh
+echo This is post-deploy hello-node
